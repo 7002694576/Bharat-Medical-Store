@@ -5,93 +5,143 @@
 
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Admin - Bharat Medical Store</title>
+    <title>Bharat Medical Store - Admin</title>
 
     <style>
 
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
             font-family: Arial, sans-serif;
-            background: #f5f7fa;
-            margin: 0;
-            padding: 30px;
+            background: #f4f7f9;
+            color: #222;
+        }
+
+        header {
+            background: #0b7a75;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin-bottom: 5px;
         }
 
         .container {
+            width: 90%;
             max-width: 1000px;
-            margin: auto;
+            margin: 30px auto;
         }
 
-        h1 {
-            text-align: center;
-            color: #087f5b;
-        }
-
-        .form-box {
+        .box {
             background: white;
             padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 3px 12px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
         }
 
-        .form-box h2 {
-            color: #087f5b;
+        .box h2 {
+            margin-bottom: 20px;
+            color: #0b7a75;
         }
 
-        input {
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
             width: 100%;
             padding: 12px;
-            margin: 8px 0;
             border: 1px solid #ccc;
             border-radius: 6px;
-            font-size: 16px;
+            font-size: 15px;
         }
 
-        button {
-            background: #087f5b;
+        .form-group textarea {
+            height: 90px;
+            resize: vertical;
+        }
+
+        .add-btn {
+            background: #0b7a75;
             color: white;
             border: none;
-            padding: 12px 20px;
+            padding: 12px 25px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 16px;
         }
 
-        button:hover {
-            background: #065f46;
-        }
-
-        .medicine-list {
-            display: grid;
-            grid-template-columns:
-                repeat(auto-fit, minmax(220px, 1fr));
-            gap: 20px;
+        .add-btn:hover {
+            background: #095f5b;
         }
 
         .medicine-card {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background: #fafafa;
         }
 
         .medicine-card h3 {
-            color: #087f5b;
+            color: #0b7a75;
+            margin-bottom: 8px;
         }
 
-        .back {
-            display: inline-block;
-            margin-bottom: 20px;
-            text-decoration: none;
-            color: #087f5b;
+        .medicine-card p {
+            margin-bottom: 8px;
+        }
+
+        .price {
             font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stock {
+            margin-bottom: 12px;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 9px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .delete-btn:hover {
+            background: #b02a37;
+        }
+
+        .home-btn {
+            display: inline-block;
+            margin-top: 10px;
+            background: #333;
+            color: white;
+            padding: 10px 18px;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .home-btn:hover {
+            background: #111;
         }
 
     </style>
@@ -101,115 +151,195 @@
 
 <body>
 
+
+<header>
+
+    <h1>💊 Bharat Medical Store</h1>
+
+    <p>Admin Panel</p>
+
+</header>
+
+
 <div class="container">
 
-    <a href="/" class="back">
-        ← Back to Website
-    </a>
+
+    <!-- =========================
+         ADD MEDICINE
+    ========================== -->
+
+    <div class="box">
+
+        <h2>➕ Add Medicine</h2>
 
 
-    <h1>
-        Bharat Medical Store - Admin Panel
-    </h1>
+        <form action="/add-medicine" method="POST">
 
 
-    <!-- ADD MEDICINE -->
+            <div class="form-group">
 
-    <div class="form-box">
+                <label>
+                    Medicine Name
+                </label>
 
-        <h2>
-            Add New Medicine
-        </h2>
+                <input
+                    type="text"
+                    name="name"
+                    placeholder="Enter medicine name"
+                    required
+                >
 
-        <form
-            action="/add-medicine"
-            method="POST"
-        >
+            </div>
 
-            <input
-                type="text"
-                name="name"
-                placeholder="Medicine Name"
-                required
+
+            <div class="form-group">
+
+                <label>
+                    Description
+                </label>
+
+                <textarea
+                    name="description"
+                    placeholder="Enter medicine description"
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Price
+                </label>
+
+                <input
+                    type="number"
+                    name="price"
+                    placeholder="Enter price"
+                    step="0.01"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Stock
+                </label>
+
+                <input
+                    type="number"
+                    name="stock"
+                    placeholder="Enter stock quantity"
+                    required
+                >
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="add-btn"
             >
-
-            <input
-                type="text"
-                name="description"
-                placeholder="Description"
-                required
-            >
-
-            <input
-                type="number"
-                name="price"
-                placeholder="Price"
-                step="0.01"
-                required
-            >
-
-            <input
-                type="number"
-                name="stock"
-                placeholder="Stock"
-                required
-            >
-
-            <button type="submit">
-                ➕ Add Medicine
+                Add Medicine
             </button>
+
 
         </form>
 
     </div>
 
 
-    <!-- EXISTING MEDICINES -->
 
-    <div class="form-box">
+    <!-- =========================
+         MEDICINE LIST
+    ========================== -->
 
-        <h2>
-            Existing Medicines
-        </h2>
+    <div class="box">
+
+        <h2>📋 Medicines</h2>
 
 
-        <div class="medicine-list">
+        {% if medicines %}
+
 
             {% for medicine in medicines %}
 
-            <div class="medicine-card">
 
-                <h3>
-                    {{ medicine.name }}
-                </h3>
+                <div class="medicine-card">
 
-                <p>
-                    {{ medicine.description }}
-                </p>
 
-                <p>
-                    <strong>
-                        Price:
-                    </strong>
-                    ₹{{ medicine.price }}
-                </p>
+                    <h3>
+                        {{ medicine.name }}
+                    </h3>
 
-                <p>
-                    <strong>
-                        Stock:
-                    </strong>
-                    {{ medicine.stock }}
-                </p>
 
-            </div>
+                    <p>
+                        {{ medicine.description }}
+                    </p>
+
+
+                    <div class="price">
+                        Price: ₹{{ medicine.price }}
+                    </div>
+
+
+                    <div class="stock">
+                        Stock: {{ medicine.stock }}
+                    </div>
+
+
+                    <!-- DELETE -->
+
+                    <form
+                        action="/delete-medicine/{{ medicine._id }}"
+                        method="POST"
+                        onsubmit="return confirm('Are you sure you want to delete this medicine?');"
+                    >
+
+                        <button
+                            type="submit"
+                            class="delete-btn"
+                        >
+                            🗑️ Delete
+                        </button>
+
+                    </form>
+
+
+                </div>
+
 
             {% endfor %}
 
-        </div>
+
+        {% else %}
+
+
+            <p>
+                No medicines added yet.
+            </p>
+
+
+        {% endif %}
+
 
     </div>
 
+
+    <a
+        href="/"
+        class="home-btn"
+    >
+        🏠 Back to Website
+    </a>
+
+
 </div>
+
 
 </body>
 
