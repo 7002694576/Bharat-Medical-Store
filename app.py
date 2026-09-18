@@ -1,33 +1,26 @@
-from flask import Flask, render_template, request, jsonify, redirect
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from pymongo import MongoClient
-from datetime import datetime
-from bson.objectid import ObjectId
 from werkzeug.utils import secure_filename
 import os
-
+from datetime import datetime
 
 app = Flask(__name__)
-
 
 # =========================================================
 # MONGODB CONNECTION
 # =========================================================
 
-# Render par MONGO_URI = MongoDB Atlas connection string
-# Local PC par MONGO_URI na ho to local MongoDB use hoga
-
 MONGO_URI = os.environ.get("MONGO_URI")
 
 if not MONGO_URI:
+    # Local computer ke liye
     MONGO_URI = "mongodb://127.0.0.1:27017/"
-
 
 client = MongoClient(
     MONGO_URI,
     serverSelectionTimeoutMS=5000,
     connectTimeoutMS=5000
 )
-
 
 db = client["Bharat_Battery_DB"]
 
@@ -36,30 +29,15 @@ products_collection = db["products"]
 
 
 # =========================================================
-# IMAGE UPLOAD
+# UPLOAD SETTINGS
 # =========================================================
 
 UPLOAD_FOLDER = "static/uploads"
 
-ALLOWED_EXTENSIONS = {
-    "png",
-    "jpg",
-    "jpeg",
-    "webp"
-}
-
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
-
-
-def allowed_file(filename):
-
-    return (
-        "." in filename
-        and filename.rsplit(".", 1)[1].lower()
-        in ALLOWED_EXTENSIONS
-    )
 
 
 # =========================================================
@@ -69,9 +47,7 @@ def allowed_file(filename):
 @app.route("/")
 def home():
 
-    products = list(
-        products_collection.find().sort("_id", -1)
-    )
+    products = list(products_collection.find().sort("_id", -1))
 
     return render_template(
         "index.html",
@@ -86,391 +62,274 @@ def home():
 @app.route("/admin")
 def admin():
 
-    products = list(
-        products_collection.find().sort("_id", -1)
-    )
+    products = list(products_collection.find().sort("_id", -1))
 
-    orders = list(
-        orders_collection.find().sort("_id", -1)
-    )
-
-    total_orders = orders_collection.count_documents({})
-
-    pending_orders = orders_collection.count_documents({
-        "status": "Pending"
-    })
-
-    total_products = products_collection.count_documents({})
+    orders = list(orders_collection.find().sort("_id", -1))
 
     return render_template(
         "admin.html",
         products=products,
-        orders=orders,
-        total_orders=total_orders,
-        pending_orders=pending_orders,
-        total_products=total_products
+        orders=orders
     )
 
 
 # =========================================================
-# ADD / EDIT PRODUCT
+# ADD PRODUCT
 # =========================================================
 
-@app.route("/admin/save-product", methods=["POST"])
-def save_product():
+@app.route("/add_product", methods=["POST"])
+def add_product():
 
-    try:
+    name = request.form.get("name", "").strip()
+    category = request.form.get("category", "").strip()
+    capacity = request.form.get("capacity", "").strip()
+    price = request.form.get("price", "").strip()
+    warranty = request.form.get("warranty", "").strip()
 
-        product_id = request.form.get(
-            "product_id",
-            ""
+    image = request.files.get("image")
+
+    image_name = ""
+
+    if image and image.filename:
+
+        filename = secure_filename(image.filename)
+
+        image_path = os.path.join(
+            app.config["UPLOAD_FOLDER"],
+            filename
         )
 
-        old_image = request.form.get(
-            "old_image",
-            ""
-        )
+        image.save(image_path)
 
-        category = request.form.get(
-            "category",
-            ""
-        ).strip()
+        image_name = "uploads/" + filename
 
-        name = request.form.get(
-            "name",
-            ""
-        ).strip()
+    product = {
+        "name": name,
+        "category": category,
+        "capacity": capacity,
+        "price": price,
+        "warranty": warranty,
+        "image": image_name,
+        "created_at": datetime.utcnow()
+    }
 
-        capacity = request.form.get(
-            "capacity",
-            ""
-        ).strip()
+    products_collection.insert_one(product)
 
-        price = request.form.get(
-            "price",
-            ""
-        ).strip()
-
-        warranty = request.form.get(
-            "warranty",
-            ""
-        ).strip()
-
-
-        # -------------------------------------------------
-        # IMAGE
-        # -------------------------------------------------
-
-        image_path = old_image
-
-        if "image" in request.files:
-
-            file = request.files["image"]
-
-            if file and file.filename:
-
-                if allowed_file(file.filename):
-
-                    filename = secure_filename(
-                        file.filename
-                    )
-
-                    file.save(
-                        os.path.join(
-                            app.config["UPLOAD_FOLDER"],
-                            filename
-                        )
-                    )
-
-                    image_path = (
-                        "uploads/" + filename
-                    )
-
-
-        # -------------------------------------------------
-        # PRODUCT DATA
-        # -------------------------------------------------
-
-        product_data = {
-
-            "category": category,
-
-            "name": name,
-
-            "capacity": capacity,
-
-            "price": price,
-
-            "warranty": warranty,
-
-            "image": image_path,
-
-            "updated_at": datetime.now()
-        }
-
-
-        # -------------------------------------------------
-        # EDIT PRODUCT
-        # -------------------------------------------------
-
-        if product_id:
-
-            products_collection.update_one(
-
-                {
-                    "_id": ObjectId(product_id)
-                },
-
-                {
-                    "$set": product_data
-                }
-
-            )
-
-
-        # -------------------------------------------------
-        # ADD PRODUCT
-        # -------------------------------------------------
-
-        else:
-
-            product_data["created_at"] = datetime.now()
-
-            products_collection.insert_one(
-                product_data
-            )
-
-
-        return redirect("/admin")
-
-
-    except Exception as e:
-
-        return f"Product Save Error: {e}"
+    return redirect(url_for("admin"))
 
 
 # =========================================================
 # DELETE PRODUCT
 # =========================================================
 
-@app.route(
-    "/admin/delete-product/<product_id>",
-    methods=["POST"]
-)
+@app.route("/delete_product/<product_id>")
 def delete_product(product_id):
+
+    from bson.objectid import ObjectId
 
     try:
 
         products_collection.delete_one(
-
-            {
-                "_id": ObjectId(product_id)
-            }
-
+            {"_id": ObjectId(product_id)}
         )
-
-        return redirect("/admin")
-
 
     except Exception as e:
 
-        return f"Product Delete Error: {e}"
+        print("Delete Error:", e)
+
+    return redirect(url_for("admin"))
+
+
+# =========================================================
+# EDIT PRODUCT
+# =========================================================
+
+@app.route("/edit_product/<product_id>", methods=["GET", "POST"])
+def edit_product(product_id):
+
+    from bson.objectid import ObjectId
+
+    try:
+
+        product = products_collection.find_one(
+            {"_id": ObjectId(product_id)}
+        )
+
+    except Exception:
+
+        return "Invalid Product ID", 400
+
+    if not product:
+
+        return "Product not found", 404
+
+    if request.method == "POST":
+
+        name = request.form.get("name", "").strip()
+        category = request.form.get("category", "").strip()
+        capacity = request.form.get("capacity", "").strip()
+        price = request.form.get("price", "").strip()
+        warranty = request.form.get("warranty", "").strip()
+
+        update_data = {
+            "name": name,
+            "category": category,
+            "capacity": capacity,
+            "price": price,
+            "warranty": warranty
+        }
+
+        image = request.files.get("image")
+
+        if image and image.filename:
+
+            filename = secure_filename(image.filename)
+
+            image_path = os.path.join(
+                app.config["UPLOAD_FOLDER"],
+                filename
+            )
+
+            image.save(image_path)
+
+            update_data["image"] = "uploads/" + filename
+
+        products_collection.update_one(
+            {"_id": ObjectId(product_id)},
+            {"$set": update_data}
+        )
+
+        return redirect(url_for("admin"))
+
+    return render_template(
+        "admin.html",
+        products=list(products_collection.find().sort("_id", -1)),
+        orders=list(orders_collection.find().sort("_id", -1)),
+        edit_product=product
+    )
 
 
 # =========================================================
 # PLACE ORDER
 # =========================================================
 
-@app.route(
-    "/place-order",
-    methods=["POST"]
-)
-def place_order():
+@app.route("/order", methods=["POST"])
+def order():
 
-    try:
+    customer_name = request.form.get(
+        "customer_name",
+        ""
+    ).strip()
 
-        data = request.get_json()
+    mobile = request.form.get(
+        "mobile",
+        ""
+    ).strip()
 
-        if not data:
+    address = request.form.get(
+        "address",
+        ""
+    ).strip()
 
-            return jsonify({
+    product_name = request.form.get(
+        "product_name",
+        ""
+    ).strip()
 
-                "success": False,
+    quantity = request.form.get(
+        "quantity",
+        "1"
+    ).strip()
 
-                "message":
-                    "No order data received"
+    order_data = {
 
-            })
+        "customer_name": customer_name,
 
+        "mobile": mobile,
 
-        product = data.get(
-            "product",
-            ""
-        )
+        "address": address,
 
-        name = data.get(
-            "name",
-            ""
-        )
+        "product_name": product_name,
 
-        mobile = data.get(
-            "mobile",
-            ""
-        )
+        "quantity": quantity,
 
-        address = data.get(
-            "address",
-            ""
-        )
+        "status": "Pending",
 
-        price = data.get(
-            "price",
-            ""
-        )
+        "created_at": datetime.utcnow()
+    }
 
+    orders_collection.insert_one(order_data)
 
-        order_data = {
-
-            "product": product,
-
-            "name": name,
-
-            "mobile": mobile,
-
-            "address": address,
-
-            "price": price,
-
-            "status": "Pending",
-
-            "order_date": datetime.now(),
-
-            "status_updated_at":
-                datetime.now()
-
-        }
-
-
-        orders_collection.insert_one(
-            order_data
-        )
-
-
-        return jsonify({
-
-            "success": True,
-
-            "message":
-                "Order placed successfully"
-
-        })
-
-
-    except Exception as e:
-
-        return jsonify({
-
-            "success": False,
-
-            "message": str(e)
-
-        })
+    return redirect(url_for("home"))
 
 
 # =========================================================
 # UPDATE ORDER STATUS
 # =========================================================
 
-@app.route(
-    "/admin/update-order-status/<order_id>",
-    methods=["POST"]
-)
-def update_order_status(order_id):
+@app.route("/update_order/<order_id>", methods=["POST"])
+def update_order(order_id):
+
+    from bson.objectid import ObjectId
+
+    status = request.form.get(
+        "status",
+        "Pending"
+    )
+
+    allowed_status = [
+        "Pending",
+        "Confirmed",
+        "Delivered",
+        "Cancelled"
+    ]
+
+    if status not in allowed_status:
+
+        status = "Pending"
 
     try:
 
-        status = request.form.get(
-            "status",
-            "Pending"
-        )
-
-
-        allowed_statuses = [
-
-            "Pending",
-
-            "Confirmed",
-
-            "Delivered",
-
-            "Cancelled"
-
-        ]
-
-
-        if status not in allowed_statuses:
-
-            return "Invalid Order Status"
-
-
         orders_collection.update_one(
-
-            {
-                "_id": ObjectId(order_id)
-            },
-
+            {"_id": ObjectId(order_id)},
             {
                 "$set": {
-
-                    "status": status,
-
-                    "status_updated_at":
-                        datetime.now()
-
+                    "status": status
                 }
             }
-
         )
-
-
-        return redirect("/admin")
-
 
     except Exception as e:
 
-        return f"Order Status Update Error: {e}"
+        print("Order Update Error:", e)
+
+    return redirect(url_for("admin"))
 
 
 # =========================================================
 # DELETE ORDER
 # =========================================================
 
-@app.route(
-    "/admin/delete-order/<order_id>",
-    methods=["POST"]
-)
+@app.route("/delete_order/<order_id>")
 def delete_order(order_id):
+
+    from bson.objectid import ObjectId
 
     try:
 
         orders_collection.delete_one(
-
-            {
-                "_id": ObjectId(order_id)
-            }
-
+            {"_id": ObjectId(order_id)}
         )
-
-        return redirect("/admin")
-
 
     except Exception as e:
 
-        return f"Order Delete Error: {e}"
+        print("Order Delete Error:", e)
+
+    return redirect(url_for("admin"))
 
 
 # =========================================================
-# DATABASE HEALTH CHECK
+# HEALTH CHECK
 # =========================================================
 
 @app.route("/health")
@@ -481,13 +340,46 @@ def health():
         client.admin.command("ping")
 
         return jsonify({
+            "status": "OK",
+            "database": "Connected"
+        })
+
+    except Exception as e:
+
+        return jsonify({
+            "status": "ERROR",
+            "database": str(e)
+        }), 500
+
+
+# =========================================================
+# DATABASE TEST
+# =========================================================
+
+@app.route("/db-test")
+def db_test():
+
+    try:
+
+        client.admin.command("ping")
+
+        product_count = products_collection.count_documents({})
+
+        order_count = orders_collection.count_documents({})
+
+        return jsonify({
 
             "status": "OK",
 
-            "database": "Connected"
+            "mongodb": "Connected",
+
+            "database": "Bharat_Battery_DB",
+
+            "products": product_count,
+
+            "orders": order_count
 
         })
-
 
     except Exception as e:
 
@@ -495,28 +387,19 @@ def health():
 
             "status": "ERROR",
 
-            "database": str(e)
+            "error": str(e)
 
         }), 500
 
 
 # =========================================================
-# RUN LOCAL
+# RUN
 # =========================================================
 
 if __name__ == "__main__":
 
     app.run(
-
         host="0.0.0.0",
-
-        port=int(
-            os.environ.get(
-                "PORT",
-                5000
-            )
-        ),
-
+        port=5000,
         debug=True
-
     )
