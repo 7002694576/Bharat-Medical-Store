@@ -10,18 +10,24 @@ app = Flask(__name__)
 
 
 # =========================================================
-# MONGODB
+# MONGODB CONNECTION
 # =========================================================
 
-# Render par MONGO_URI environment variable se Atlas connect hoga.
-# Local PC par agar MONGO_URI nahi hai to local MongoDB use hoga.
-
-import os
-from pymongo import MongoClient
+# Render par MONGO_URI = MongoDB Atlas connection string
+# Local PC par MONGO_URI na ho to local MongoDB use hoga
 
 MONGO_URI = os.environ.get("MONGO_URI")
 
-client = MongoClient(MONGO_URI)
+if not MONGO_URI:
+    MONGO_URI = "mongodb://127.0.0.1:27017/"
+
+
+client = MongoClient(
+    MONGO_URI,
+    serverSelectionTimeoutMS=5000,
+    connectTimeoutMS=5000
+)
+
 
 db = client["Bharat_Battery_DB"]
 
@@ -115,9 +121,15 @@ def save_product():
 
     try:
 
-        product_id = request.form.get("product_id")
+        product_id = request.form.get(
+            "product_id",
+            ""
+        )
 
-        old_image = request.form.get("old_image", "")
+        old_image = request.form.get(
+            "old_image",
+            ""
+        )
 
         category = request.form.get(
             "category",
@@ -198,7 +210,7 @@ def save_product():
 
 
         # -------------------------------------------------
-        # EDIT
+        # EDIT PRODUCT
         # -------------------------------------------------
 
         if product_id:
@@ -212,11 +224,12 @@ def save_product():
                 {
                     "$set": product_data
                 }
+
             )
 
 
         # -------------------------------------------------
-        # ADD
+        # ADD PRODUCT
         # -------------------------------------------------
 
         else:
@@ -249,9 +262,11 @@ def delete_product(product_id):
     try:
 
         products_collection.delete_one(
+
             {
                 "_id": ObjectId(product_id)
             }
+
         )
 
         return redirect("/admin")
@@ -266,7 +281,10 @@ def delete_product(product_id):
 # PLACE ORDER
 # =========================================================
 
-@app.route("/place-order", methods=["POST"])
+@app.route(
+    "/place-order",
+    methods=["POST"]
+)
 def place_order():
 
     try:
@@ -276,8 +294,12 @@ def place_order():
         if not data:
 
             return jsonify({
+
                 "success": False,
-                "message": "No order data received"
+
+                "message":
+                    "No order data received"
+
             })
 
 
@@ -323,7 +345,9 @@ def place_order():
 
             "order_date": datetime.now(),
 
-            "status_updated_at": datetime.now()
+            "status_updated_at":
+                datetime.now()
+
         }
 
 
@@ -336,7 +360,8 @@ def place_order():
 
             "success": True,
 
-            "message": "Order placed successfully"
+            "message":
+                "Order placed successfully"
 
         })
 
@@ -404,6 +429,7 @@ def update_order_status(order_id):
 
                 }
             }
+
         )
 
 
@@ -444,7 +470,7 @@ def delete_order(order_id):
 
 
 # =========================================================
-# HEALTH CHECK
+# DATABASE HEALTH CHECK
 # =========================================================
 
 @app.route("/health")
