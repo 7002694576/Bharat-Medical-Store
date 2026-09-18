@@ -1,1 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Bharat Medical Store</title>
+
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            color: #222;
+        }
+
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        header {
+            background: white;
+            padding: 15px 40px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+
+        .logo-section img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+
+        .store-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #087f5b;
+        }
+
+
+        nav {
+            display: flex;
+            gap: 20px;
+        }
+
+
+        nav a {
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+
+        nav a:hover {
+            color: #087f5b;
+        }
+
+
+        /* =========================
+           HERO
+        ========================= */
+
+        .hero {
+            background: linear-gradient(
+                135deg,
+                #087f5b,
+                #0ca678
+            );
+
+            color: white;
+
+            text-align: center;
+
+            padding: 80px 20px;
+        }
+
+
+        .hero h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+
+
+        .hero p {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+
+        .button {
+            display: inline-block;
+
+            padding: 13px 25px;
+
+            margin: 5px;
+
+            border-radius: 8px;
+
+            text-decoration: none;
+
+            font-weight: bold;
+
+            color: white;
+        }
+
+
+        .call-btn {
+            background: #e03131;
+        }
+
+
+        .whatsapp-btn {
+            background: #25d366;
+        }
+
+
+        /* =========================
+           SECTION
+        ========================= */
+
+        section {
+            padding: 60px 30px;
+            text-align: center;
+        }
+
+
+        section h2 {
+            font-size: 32px;
+            margin-bottom: 30px;
+            color: #087f5b;
+        }
+
+
+        /* =========================
+           SEARCH
+        ========================= */
+
+        #medicineSearch {
+            width: 90%;
+            max-width: 600px;
+
+            padding: 15px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 8px;
+
+            font-size: 17px;
+
+            margin-bottom: 35px;
+        }
+
+
+        /* =========================
+           MEDICINE LIST
+        ========================= */
+
+        .medicine-list {
+            display: grid;
+
+            grid-template-columns:
+                repeat(auto-fit, minmax(230px, 1fr));
+
+            gap: 25px;
+
+            max-width: 1100px;
+
+            margin: auto;
+        }
+
+
+        /* =========================
+           MEDICINE CARD
+        ========================= */
+
+        .medicine-card {
+            background: white;
+
+            padding: 25px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 3px 12px rgba(0,0,0,0.12);
+
+            text-align: center;
+        }
+
+
+        .medicine-card h3 {
+            color: #087f5b;
+
+            font-size: 22px;
+
+            margin-bottom: 12px;
+        }
+
+
+        .medicine-card p {
+            color: #555;
+
+            margin-bottom: 15px;
+        }
+
+
+        .price {
+            font-size: 22px;
+
+            font-weight: bold;
+
+            margin-bottom: 10px;
+        }
+
+
+        .stock {
+            color: green;
+
+            font-weight: bold;
+
+            margin-bottom: 18px;
+        }
+
+
+        .cart-btn {
+            background: #087f5b;
+
+            color: white;
+
+            border: none;
+
+            padding: 12px 18px;
+
+            border-radius: 7px;
+
+            cursor: pointer;
+
+            font-size: 15px;
+        }
+
+
+        .cart-btn:hover {
+            background: #065f46;
+        }
+
+
+        /* =========================
+           SERVICES
+        ========================= */
+
+        .services {
+            display: grid;
+
+            grid-template-columns:
+                repeat(auto-fit, minmax(220px, 1fr));
+
+            gap: 25px;
+
+            max-width: 1000px;
+
+            margin: auto;
+        }
+
+
+        .service-card {
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 3px 12px rgba(0,0,0,0.1);
+        }
+
+
+        .service-card h3 {
+            color: #087f5b;
+
+            margin-bottom: 10px;
+        }
+
+
+        /* =========================
+           ABOUT
+        ========================= */
+
+        .about {
+            max-width: 900px;
+
+            margin: auto;
+
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 12px;
+
+            line-height: 1.7;
+
+            box-shadow:
+                0 3px 12px rgba(0,0,0,0.1);
+        }
+
+
+        /* =========================
+           CART
+        ========================= */
+
+        .cart-box {
+            max-width: 900px;
+
+            margin: auto;
+
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 3px 12px rgba(0,0,0,0.1);
+
+            text-align: left;
+        }
+
+
+        .cart-item {
+            border-bottom: 1px solid #ddd;
+
+            padding: 15px 0;
+        }
+
+
+        .cart-item h3 {
+            color: #087f5b;
+
+            margin-bottom: 8px;
+        }
+
+
+        .quantity-btn {
+            padding: 4px 10px;
+
+            margin: 0 5px;
+
+            border: 1px solid #ccc;
+
+            background: white;
+
+            cursor: pointer;
+
+            border-radius: 4px;
+        }
+
+
+        .cart-total {
+            font-size: 22px;
+
+            font-weight: bold;
+
+            margin-top: 20px;
+
+            text-align: right;
+        }
+
+
+        /* =========================
+           ORDER FORM
+        ========================= */
+
+        .order-form {
+            max-width: 600px;
+
+            margin: 30px auto;
+
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 15px;
+        }
+
+
+        .order-form input,
+        .order-form textarea {
+
+            padding: 13px;
+
+            border: 1px solid #ccc;
+
+            border-radius: 7px;
+
+            font-size: 16px;
+        }
+
+
+        .order-btn {
+            padding: 14px;
+
+            background: #25d366;
+
+            color: white;
+
+            border: none;
+
+            border-radius: 7px;
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+        }
+
+
+        /* =========================
+           CONTACT
+        ========================= */
+
+        .contact-box {
+            background: white;
+
+            max-width: 700px;
+
+            margin: auto;
+
+            padding: 30px;
+
+            border-radius: 12px;
+
+            box-shadow:
+                0 3px 12px rgba(0,0,0,0.1);
+
+            line-height: 2;
+        }
+
+
+        .contact-box a {
+            color: #087f5b;
+
+            text-decoration: none;
+
+            font-weight: bold;
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        footer {
+            background: #222;
+
+            color: white;
+
+            text-align: center;
+
+            padding: 25px;
+
+            margin-top: 30px;
+        }
+
+
+        /* =========================
+           MOBILE
+        ========================= */
+
+        @media (max-width: 700px) {
+
+            header {
+                flex-direction: column;
+
+                gap: 15px;
+
+                padding: 15px;
+            }
+
+
+            nav {
+                flex-wrap: wrap;
+
+                justify-content: center;
+
+                gap: 12px;
+            }
+
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+
+            .hero p {
+                font-size: 17px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<header>
+
+    <div class="logo-section">
+
+        <img
+            src="{{ url_for('static', filename='logo.png.webp') }}"
+            alt="Bharat Medical Store Logo"
+        >
+
+        <div class="store-name">
+            Bharat Medical Store
+        </div>
+
+    </div>
+
+
+    <nav>
+
+        <a href="#home">Home</a>
+
+        <a href="#medicines">Medicines</a>
+
+        <a href="#services">Services</a>
+
+        <a href="#about">About Us</a>
+
+        <a href="#contact">Contact</a>
+
+        <a href="#cart">
+            🛒 Cart
+            (<span id="cartCount">0</span>)
+        </a>
+
+    </nav>
+
+</header>
+
+
+
+<!-- =========================
+     HOME
+========================= -->
+
+<section class="hero" id="home">
+
+    <h1>
+        Welcome to Bharat Medical Store
+    </h1>
+
+    <p>
+        Your trusted pharmacy for medicines and healthcare needs.
+    </p>
+
+
+    <a
+        href="tel:+918948431794"
+        class="button call-btn"
+    >
+        📞 Call Now
+    </a>
+
+
+    <a
+        href="https://wa.me/918948431794?text=Welcome%20to%20Bharat%20Medical%20Store!%20How%20may%20we%20help%20you%3F"
+        target="_blank"
+        class="button whatsapp-btn"
+    >
+        💬 WhatsApp
+    </a>
+
+</section>
+
+
+
+<!-- =========================
+     MEDICINES
+========================= -->
+
+<section id="medicines">
+
+    <h2>
+        Our Medicines
+    </h2>
+
+
+    <input
+        type="text"
+        id="medicineSearch"
+        placeholder="Search medicine..."
+        onkeyup="searchMedicine()"
+    >
+
+
+    <div class="medicine-list">
+
+
+        {% if medicines %}
+
+
+            {% for medicine in medicines %}
+
+
+            <div class="medicine-card">
+
+
+                <h3>
+                    {{ medicine.name }}
+                </h3>
+
+
+                <p>
+                    {{ medicine.description }}
+                </p>
+
+
+                <div class="price">
+                    ₹{{ medicine.price }}
+                </div>
+
+
+                <div class="stock">
+
+                    ● In Stock
+
+                </div>
+
+
+                <button
+                    class="cart-btn"
+                    onclick="addToCart(
+                        '{{ medicine.name }}',
+                        {{ medicine.price }}
+                    )"
+                >
+
+                    🛒 Add to Cart
+
+                </button>
+
+
+            </div>
+
+
+            {% endfor %}
+
+
+        {% else %}
+
+
+            <div class="medicine-card">
+
+                <h3>
+                    No Medicines Found
+                </h3>
+
+                <p>
+                    No medicines available in MongoDB.
+                </p>
+
+            </div>
+
+
+        {% endif %}
+
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================
+     SERVICES
+========================= -->
+
+<section id="services">
+
+    <h2>
+        Our Services
+    </h2>
+
+
+    <div class="services">
+
+
+        <div class="service-card">
+
+            <h3>
+                💊 Medicines
+            </h3>
+
+            <p>
+                Wide range of medicines available.
+            </p>
+
+        </div>
+
+
+        <div class="service-card">
+
+            <h3>
+                📞 Quick Support
+            </h3>
+
+            <p>
+                Contact us for medicine related queries.
+            </p>
+
+        </div>
+
+
+        <div class="service-card">
+
+            <h3>
+                💬 WhatsApp Orders
+            </h3>
+
+            <p>
+                Send your order directly on WhatsApp.
+            </p>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================
+     ABOUT
+========================= -->
+
+<section id="about">
+
+    <h2>
+        About Bharat Medical Store
+    </h2>
+
+
+    <div class="about">
+
+        <p>
+
+            Bharat Medical Store is your trusted local pharmacy
+            providing medicines and healthcare products.
+
+            Our goal is to provide convenient and reliable
+            pharmacy services to our customers.
+
+        </p>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================
+     CART
+========================= -->
+
+<section id="cart">
+
+    <h2>
+        Your Cart
+    </h2>
+
+
+    <div class="cart-box">
+
+
+        <div id="cartItems">
+
+            <p>
+                Your cart is empty.
+            </p>
+
+        </div>
+
+
+        <div class="cart-total">
+
+            Total:
+            ₹<span id="cartTotal">0</span>
+
+        </div>
+
+
+        <!-- ORDER FORM -->
+
+        <div class="order-form">
+
+
+            <input
+                type="text"
+                id="customerName"
+                placeholder="Your Name"
+            >
+
+
+            <input
+                type="tel"
+                id="customerPhone"
+                placeholder="Mobile Number"
+            >
+
+
+            <textarea
+                id="customerAddress"
+                rows="4"
+                placeholder="Delivery Address"
+            ></textarea>
+
+
+            <button
+                class="order-btn"
+                onclick="placeOrder()"
+            >
+
+                💬 Place Order on WhatsApp
+
+            </button>
+
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================
+     CONTACT
+========================= -->
+
+<section id="contact">
+
+    <h2>
+        Contact Us
+    </h2>
+
+
+    <div class="contact-box">
+
+        <p>
+            🏪 <strong>Bharat Medical Store</strong>
+        </p>
+
+
+        <p>
+            📞
+            <a href="tel:+918948431794">
+                +91 89484 31794
+            </a>
+        </p>
+
+
+        <p>
+            💬
+            <a
+                href="https://wa.me/918948431794"
+                target="_blank"
+            >
+                Chat on WhatsApp
+            </a>
+        </p>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================
+     FOOTER
+========================= -->
+
+<footer>
+
+    <p>
+        © 2026 Bharat Medical Store.
+        All Rights Reserved.
+    </p>
+
+</footer>
+
+
+
+<!-- =========================
+     JAVASCRIPT
+========================= -->
+
+<script>
+
+
+/* =========================
+   CART
+========================= */
+
+let cart = [];
+
+
+function addToCart(name, price) {
+
+    let existingItem =
+        cart.find(function(item) {
+
+            return item.name === name;
+
+        });
+
+
+    if (existingItem) {
+
+        existingItem.quantity++;
+
+    }
+
+    else {
+
+        cart.push({
+
+            name: name,
+
+            price: price,
+
+            quantity: 1
+
+        });
+
+    }
+
+
+    updateCart();
+
+}
+
+
+
+function updateCart() {
+
+    let cartItems =
+        document.getElementById("cartItems");
+
+
+    let cartCount =
+        document.getElementById("cartCount");
+
+
+    let cartTotal =
+        document.getElementById("cartTotal");
+
+
+    cartItems.innerHTML = "";
+
+
+    let total = 0;
+
+    let count = 0;
+
+
+    if (cart.length === 0) {
+
+        cartItems.innerHTML =
+            "<p>Your cart is empty.</p>";
+
+    }
+
+
+    cart.forEach(function(item) {
+
+
+        let itemTotal =
+            item.price * item.quantity;
+
+
+        total += itemTotal;
+
+        count += item.quantity;
+
+
+        cartItems.innerHTML += `
+
+            <div class="cart-item">
+
+                <h3>
+                    ${item.name}
+                </h3>
+
+                <p>
+                    Price: ₹${item.price}
+                </p>
+
+                <p>
+
+                    Quantity:
+
+                    <button
+                        class="quantity-btn"
+                        onclick="changeQuantity(
+                            '${item.name}',
+                            -1
+                        )"
+                    >
+                        −
+                    </button>
+
+
+                    ${item.quantity}
+
+
+                    <button
+                        class="quantity-btn"
+                        onclick="changeQuantity(
+                            '${item.name}',
+                            1
+                        )"
+                    >
+                        +
+                    </button>
+
+                </p>
+
+
+                <p>
+                    Item Total: ₹${itemTotal}
+                </p>
+
+            </div>
+
+        `;
+
+    });
+
+
+    cartCount.innerText = count;
+
+    cartTotal.innerText = total;
+
+}
+
+
+
+/* =========================
+   CHANGE QUANTITY
+========================= */
+
+function changeQuantity(name, change) {
+
+    let item =
+        cart.find(function(item) {
+
+            return item.name === name;
+
+        });
+
+
+    if (!item) {
+
+        return;
+
+    }
+
+
+    item.quantity += change;
+
+
+    if (item.quantity <= 0) {
+
+        cart =
+            cart.filter(function(item) {
+
+                return item.name !== name;
+
+            });
+
+    }
+
+
+    updateCart();
+
+}
+
+
+
+/* =========================
+   MEDICINE SEARCH
+========================= */
+
+function searchMedicine() {
+
+    let searchText =
+        document
+        .getElementById("medicineSearch")
+        .value
+        .toLowerCase();
+
+
+    let medicines =
+        document
+        .getElementsByClassName("medicine-card");
+
+
+    for (
+        let i = 0;
+        i < medicines.length;
+        i++
+    ) {
+
+
+        let heading =
+            medicines[i]
+            .getElementsByTagName("h3")[0];
+
+
+        if (!heading) {
+
+            continue;
+
+        }
+
+
+        let name =
+            heading.innerText.toLowerCase();
+
+
+        if (name.includes(searchText)) {
+
+            medicines[i].style.display =
+                "block";
+
+        }
+
+        else {
+
+            medicines[i].style.display =
+                "none";
+
+        }
+
+    }
+
+}
+
+
+
+/* =========================
+   WHATSAPP ORDER
+========================= */
+
+function placeOrder() {
+
+
+    if (cart.length === 0) {
+
+        alert(
+            "Please add medicine to cart first."
+        );
+
+        return;
+
+    }
+
+
+    let name =
+        document
+        .getElementById("customerName")
+        .value;
+
+
+    let phone =
+        document
+        .getElementById("customerPhone")
+        .value;
+
+
+    let address =
+        document
+        .getElementById("customerAddress")
+        .value;
+
+
+    if (
+        name === "" ||
+        phone === "" ||
+        address === ""
+    ) {
+
+        alert(
+            "Please fill all customer details."
+        );
+
+        return;
+
+    }
+
+
+    let message =
+        "Hello Bharat Medical Store,%0A%0A";
+
+
+    message +=
+        "Customer Name: "
+        + name
+        + "%0A";
+
+
+    message +=
+        "Mobile: "
+        + phone
+        + "%0A";
+
+
+    message +=
+        "Address: "
+        + address
+        + "%0A%0A";
+
+
+    message +=
+        "Order Details:%0A";
+
+
+    cart.forEach(function(item) {
+
+        message +=
+            item.name
+            + " x "
+            + item.quantity
+            + " = ₹"
+            + (
+                item.price *
+                item.quantity
+            )
+            + "%0A";
+
+    });
+
+
+    let total = 0;
+
+
+    cart.forEach(function(item) {
+
+        total +=
+            item.price *
+            item.quantity;
+
+    });
+
+
+    message +=
+        "%0ATotal: ₹"
+        + total;
+
+
+    let whatsappURL =
+        "https://wa.me/918948431794?text="
+        + message;
+
+
+    window.open(
+        whatsappURL,
+        "_blank"
+    );
+
+}
+
+
+</script>
+
+
+</body>
+
+</html>
