@@ -1,20 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify
 from pymongo import MongoClient
 from werkzeug.utils import secure_filename
+from bson.objectid import ObjectId
 import os
 from datetime import datetime
 
 app = Flask(__name__)
 
 # =========================================================
-# MONGODB CONNECTION
+# MONGODB
 # =========================================================
 
 MONGO_URI = os.environ.get("MONGO_URI")
 
 if not MONGO_URI:
-    # Local computer ke liye
-    MONGO_URI = "mongodb://127.0.0.1:27017/"
+    raise Exception("MONGO_URI environment variable is missing")
 
 client = MongoClient(
     MONGO_URI,
@@ -34,20 +34,21 @@ products_collection = db["products"]
 
 UPLOAD_FOLDER = "static/uploads"
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 
 # =========================================================
-# HOME PAGE
+# HOME
 # =========================================================
 
 @app.route("/")
 def home():
 
-    products = list(products_collection.find().sort("_id", -1))
+    products = list(
+        products_collection.find().sort("_id", -1)
+    )
 
     return render_template(
         "index.html",
@@ -56,15 +57,19 @@ def home():
 
 
 # =========================================================
-# ADMIN PAGE
+# ADMIN
 # =========================================================
 
 @app.route("/admin")
 def admin():
 
-    products = list(products_collection.find().sort("_id", -1))
+    products = list(
+        products_collection.find().sort("_id", -1)
+    )
 
-    orders = list(orders_collection.find().sort("_id", -1))
+    orders = list(
+        orders_collection.find().sort("_id", -1)
+    )
 
     return render_template(
         "admin.html",
@@ -94,12 +99,12 @@ def add_product():
 
         filename = secure_filename(image.filename)
 
-        image_path = os.path.join(
+        filepath = os.path.join(
             app.config["UPLOAD_FOLDER"],
             filename
         )
 
-        image.save(image_path)
+        image.save(filepath)
 
         image_name = "uploads/" + filename
 
@@ -125,17 +130,17 @@ def add_product():
 @app.route("/delete_product/<product_id>")
 def delete_product(product_id):
 
-    from bson.objectid import ObjectId
-
     try:
 
         products_collection.delete_one(
-            {"_id": ObjectId(product_id)}
+            {
+                "_id": ObjectId(product_id)
+            }
         )
 
     except Exception as e:
 
-        print("Delete Error:", e)
+        print("Delete Product Error:", e)
 
     return redirect(url_for("admin"))
 
@@ -147,12 +152,12 @@ def delete_product(product_id):
 @app.route("/edit_product/<product_id>", methods=["GET", "POST"])
 def edit_product(product_id):
 
-    from bson.objectid import ObjectId
-
     try:
 
         product = products_collection.find_one(
-            {"_id": ObjectId(product_id)}
+            {
+                "_id": ObjectId(product_id)
+            }
         )
 
     except Exception:
@@ -165,11 +170,30 @@ def edit_product(product_id):
 
     if request.method == "POST":
 
-        name = request.form.get("name", "").strip()
-        category = request.form.get("category", "").strip()
-        capacity = request.form.get("capacity", "").strip()
-        price = request.form.get("price", "").strip()
-        warranty = request.form.get("warranty", "").strip()
+        name = request.form.get(
+            "name",
+            ""
+        ).strip()
+
+        category = request.form.get(
+            "category",
+            ""
+        ).strip()
+
+        capacity = request.form.get(
+            "capacity",
+            ""
+        ).strip()
+
+        price = request.form.get(
+            "price",
+            ""
+        ).strip()
+
+        warranty = request.form.get(
+            "warranty",
+            ""
+        ).strip()
 
         update_data = {
             "name": name,
@@ -183,28 +207,46 @@ def edit_product(product_id):
 
         if image and image.filename:
 
-            filename = secure_filename(image.filename)
+            filename = secure_filename(
+                image.filename
+            )
 
-            image_path = os.path.join(
+            filepath = os.path.join(
                 app.config["UPLOAD_FOLDER"],
                 filename
             )
 
-            image.save(image_path)
+            image.save(filepath)
 
-            update_data["image"] = "uploads/" + filename
+            update_data["image"] = (
+                "uploads/" + filename
+            )
 
         products_collection.update_one(
-            {"_id": ObjectId(product_id)},
-            {"$set": update_data}
+            {
+                "_id": ObjectId(product_id)
+            },
+            {
+                "$set": update_data
+            }
         )
 
-        return redirect(url_for("admin"))
+        return redirect(
+            url_for("admin")
+        )
+
+    products = list(
+        products_collection.find().sort("_id", -1)
+    )
+
+    orders = list(
+        orders_collection.find().sort("_id", -1)
+    )
 
     return render_template(
         "admin.html",
-        products=list(products_collection.find().sort("_id", -1)),
-        orders=list(orders_collection.find().sort("_id", -1)),
+        products=products,
+        orders=orders,
         edit_product=product
     )
 
@@ -258,19 +300,24 @@ def order():
         "created_at": datetime.utcnow()
     }
 
-    orders_collection.insert_one(order_data)
+    orders_collection.insert_one(
+        order_data
+    )
 
-    return redirect(url_for("home"))
+    return redirect(
+        url_for("home")
+    )
 
 
 # =========================================================
 # UPDATE ORDER STATUS
 # =========================================================
 
-@app.route("/update_order/<order_id>", methods=["POST"])
+@app.route(
+    "/update_order/<order_id>",
+    methods=["POST"]
+)
 def update_order(order_id):
-
-    from bson.objectid import ObjectId
 
     status = request.form.get(
         "status",
@@ -291,7 +338,9 @@ def update_order(order_id):
     try:
 
         orders_collection.update_one(
-            {"_id": ObjectId(order_id)},
+            {
+                "_id": ObjectId(order_id)
+            },
             {
                 "$set": {
                     "status": status
@@ -301,9 +350,14 @@ def update_order(order_id):
 
     except Exception as e:
 
-        print("Order Update Error:", e)
+        print(
+            "Update Order Error:",
+            e
+        )
 
-    return redirect(url_for("admin"))
+    return redirect(
+        url_for("admin")
+    )
 
 
 # =========================================================
@@ -313,19 +367,24 @@ def update_order(order_id):
 @app.route("/delete_order/<order_id>")
 def delete_order(order_id):
 
-    from bson.objectid import ObjectId
-
     try:
 
         orders_collection.delete_one(
-            {"_id": ObjectId(order_id)}
+            {
+                "_id": ObjectId(order_id)
+            }
         )
 
     except Exception as e:
 
-        print("Order Delete Error:", e)
+        print(
+            "Delete Order Error:",
+            e
+        )
 
-    return redirect(url_for("admin"))
+    return redirect(
+        url_for("admin")
+    )
 
 
 # =========================================================
@@ -363,9 +422,13 @@ def db_test():
 
         client.admin.command("ping")
 
-        product_count = products_collection.count_documents({})
+        product_count = (
+            products_collection.count_documents({})
+        )
 
-        order_count = orders_collection.count_documents({})
+        order_count = (
+            orders_collection.count_documents({})
+        )
 
         return jsonify({
 
@@ -393,7 +456,7 @@ def db_test():
 
 
 # =========================================================
-# RUN
+# RUN LOCAL
 # =========================================================
 
 if __name__ == "__main__":
