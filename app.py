@@ -21,7 +21,7 @@ MONGO_URI = os.environ.get(
     "mongodb://127.0.0.1:27017/"
 )
 
-client = MongoClient(MONGO_URI)
+MongoClient("mongodb://127.0.0.1:27017/")
 
 db = client["Bharat_Battery_DB"]
 
