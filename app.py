@@ -16,12 +16,12 @@ app = Flask(__name__)
 # Render par MONGO_URI environment variable se Atlas connect hoga.
 # Local PC par agar MONGO_URI nahi hai to local MongoDB use hoga.
 
-MONGO_URI = os.environ.get(
-    "MONGO_URI",
-    "mongodb://127.0.0.1:27017/"
-)
+import os
+from pymongo import MongoClient
 
-MongoClient("mongodb://127.0.0.1:27017/")
+MONGO_URI = os.environ.get("MONGO_URI")
+
+client = MongoClient(MONGO_URI)
 
 db = client["Bharat_Battery_DB"]
 
