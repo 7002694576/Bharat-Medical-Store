@@ -8,13 +8,17 @@ from datetime import datetime
 app = Flask(__name__)
 
 # =========================================================
-# MONGODB CONFIGURATION
+# MONGODB
 # =========================================================
 
 MONGO_URI = os.environ.get("MONGO_URI")
 
 if not MONGO_URI:
     raise Exception("MONGO_URI environment variable is missing")
+
+# IMPORTANT:
+# MongoClient is created only when get_database() is called.
+# This avoids MongoClient being created before Gunicorn forks.
 
 client = None
 db = None
@@ -51,7 +55,10 @@ def get_database():
 
 UPLOAD_FOLDER = "static/uploads"
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(
+    UPLOAD_FOLDER,
+    exist_ok=True
+)
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
@@ -66,7 +73,10 @@ def home():
     get_database()
 
     products = list(
-        products_collection.find().sort("_id", -1)
+        products_collection.find().sort(
+            "_id",
+            -1
+        )
     )
 
     return render_template(
@@ -85,11 +95,17 @@ def admin():
     get_database()
 
     products = list(
-        products_collection.find().sort("_id", -1)
+        products_collection.find().sort(
+            "_id",
+            -1
+        )
     )
 
     orders = list(
-        orders_collection.find().sort("_id", -1)
+        orders_collection.find().sort(
+            "_id",
+            -1
+        )
     )
 
     return render_template(
@@ -103,7 +119,10 @@ def admin():
 # ADD PRODUCT
 # =========================================================
 
-@app.route("/add_product", methods=["POST"])
+@app.route(
+    "/add_product",
+    methods=["POST"]
+)
 def add_product():
 
     get_database()
@@ -133,7 +152,9 @@ def add_product():
         ""
     ).strip()
 
-    image = request.files.get("image")
+    image = request.files.get(
+        "image"
+    )
 
     image_name = ""
 
@@ -150,7 +171,9 @@ def add_product():
 
         image.save(filepath)
 
-        image_name = "uploads/" + filename
+        image_name = (
+            "uploads/" + filename
+        )
 
     product = {
 
@@ -182,7 +205,9 @@ def add_product():
 # DELETE PRODUCT
 # =========================================================
 
-@app.route("/delete_product/<product_id>")
+@app.route(
+    "/delete_product/<product_id>"
+)
 def delete_product(product_id):
 
     get_database()
@@ -191,7 +216,9 @@ def delete_product(product_id):
 
         products_collection.delete_one(
             {
-                "_id": ObjectId(product_id)
+                "_id": ObjectId(
+                    product_id
+                )
             }
         )
 
@@ -223,17 +250,25 @@ def edit_product(product_id):
 
         product = products_collection.find_one(
             {
-                "_id": ObjectId(product_id)
+                "_id": ObjectId(
+                    product_id
+                )
             }
         )
 
     except Exception:
 
-        return "Invalid Product ID", 400
+        return (
+            "Invalid Product ID",
+            400
+        )
 
     if not product:
 
-        return "Product not found", 404
+        return (
+            "Product not found",
+            404
+        )
 
     if request.method == "POST":
 
@@ -275,7 +310,9 @@ def edit_product(product_id):
             "warranty": warranty
         }
 
-        image = request.files.get("image")
+        image = request.files.get(
+            "image"
+        )
 
         if image and image.filename:
 
@@ -297,7 +334,9 @@ def edit_product(product_id):
         products_collection.update_one(
 
             {
-                "_id": ObjectId(product_id)
+                "_id": ObjectId(
+                    product_id
+                )
             },
 
             {
@@ -435,7 +474,9 @@ def update_order(order_id):
         orders_collection.update_one(
 
             {
-                "_id": ObjectId(order_id)
+                "_id": ObjectId(
+                    order_id
+                )
             },
 
             {
@@ -473,7 +514,9 @@ def delete_order(order_id):
         orders_collection.delete_one(
 
             {
-                "_id": ObjectId(order_id)
+                "_id": ObjectId(
+                    order_id
+                )
             }
         )
 
@@ -500,7 +543,9 @@ def health():
 
         get_database()
 
-        client.admin.command("ping")
+        client.admin.command(
+            "ping"
+        )
 
         return jsonify({
 
@@ -531,7 +576,9 @@ def db_test():
 
         get_database()
 
-        client.admin.command("ping")
+        client.admin.command(
+            "ping"
+        )
 
         product_count = (
             products_collection.count_documents({})
@@ -540,6 +587,29 @@ def db_test():
         order_count = (
             orders_collection.count_documents({})
         )
+
+        # Show only safe information.
+        # Password is NEVER returned.
+
+        uri_safe = MONGO_URI
+
+        if "@" in uri_safe:
+
+            prefix = uri_safe.split(
+                "://",
+                1
+            )[0]
+
+            host_part = uri_safe.split(
+                "@",
+                1
+            )[1]
+
+            uri_safe = (
+                prefix
+                + "://****@"
+                + host_part
+            )
 
         return jsonify({
 
@@ -551,7 +621,9 @@ def db_test():
 
             "products": product_count,
 
-            "orders": order_count
+            "orders": order_count,
+
+            "mongo_uri_source": uri_safe
         })
 
     except Exception as e:
