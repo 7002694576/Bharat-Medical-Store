@@ -8,7 +8,7 @@ from datetime import datetime
 app = Flask(__name__)
 
 # =========================================================
-# MONGODB
+# MONGODB CONFIGURATION
 # =========================================================
 
 MONGO_URI = os.environ.get("MONGO_URI")
@@ -16,16 +16,33 @@ MONGO_URI = os.environ.get("MONGO_URI")
 if not MONGO_URI:
     raise Exception("MONGO_URI environment variable is missing")
 
-client = MongoClient(
-    MONGO_URI,
-    serverSelectionTimeoutMS=5000,
-    connectTimeoutMS=5000
-)
+client = None
+db = None
+orders_collection = None
+products_collection = None
 
-db = client["Bharat_Battery_DB"]
 
-orders_collection = db["orders"]
-products_collection = db["products"]
+def get_database():
+
+    global client
+    global db
+    global orders_collection
+    global products_collection
+
+    if client is None:
+
+        client = MongoClient(
+            MONGO_URI,
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=5000
+        )
+
+        db = client["Bharat_Battery_DB"]
+
+        orders_collection = db["orders"]
+        products_collection = db["products"]
+
+    return db
 
 
 # =========================================================
@@ -46,6 +63,8 @@ app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 @app.route("/")
 def home():
 
+    get_database()
+
     products = list(
         products_collection.find().sort("_id", -1)
     )
@@ -62,6 +81,8 @@ def home():
 
 @app.route("/admin")
 def admin():
+
+    get_database()
 
     products = list(
         products_collection.find().sort("_id", -1)
@@ -85,11 +106,32 @@ def admin():
 @app.route("/add_product", methods=["POST"])
 def add_product():
 
-    name = request.form.get("name", "").strip()
-    category = request.form.get("category", "").strip()
-    capacity = request.form.get("capacity", "").strip()
-    price = request.form.get("price", "").strip()
-    warranty = request.form.get("warranty", "").strip()
+    get_database()
+
+    name = request.form.get(
+        "name",
+        ""
+    ).strip()
+
+    category = request.form.get(
+        "category",
+        ""
+    ).strip()
+
+    capacity = request.form.get(
+        "capacity",
+        ""
+    ).strip()
+
+    price = request.form.get(
+        "price",
+        ""
+    ).strip()
+
+    warranty = request.form.get(
+        "warranty",
+        ""
+    ).strip()
 
     image = request.files.get("image")
 
@@ -97,7 +139,9 @@ def add_product():
 
     if image and image.filename:
 
-        filename = secure_filename(image.filename)
+        filename = secure_filename(
+            image.filename
+        )
 
         filepath = os.path.join(
             app.config["UPLOAD_FOLDER"],
@@ -109,18 +153,29 @@ def add_product():
         image_name = "uploads/" + filename
 
     product = {
+
         "name": name,
+
         "category": category,
+
         "capacity": capacity,
+
         "price": price,
+
         "warranty": warranty,
+
         "image": image_name,
+
         "created_at": datetime.utcnow()
     }
 
-    products_collection.insert_one(product)
+    products_collection.insert_one(
+        product
+    )
 
-    return redirect(url_for("admin"))
+    return redirect(
+        url_for("admin")
+    )
 
 
 # =========================================================
@@ -129,6 +184,8 @@ def add_product():
 
 @app.route("/delete_product/<product_id>")
 def delete_product(product_id):
+
+    get_database()
 
     try:
 
@@ -140,17 +197,27 @@ def delete_product(product_id):
 
     except Exception as e:
 
-        print("Delete Product Error:", e)
+        print(
+            "Delete Product Error:",
+            e
+        )
 
-    return redirect(url_for("admin"))
+    return redirect(
+        url_for("admin")
+    )
 
 
 # =========================================================
 # EDIT PRODUCT
 # =========================================================
 
-@app.route("/edit_product/<product_id>", methods=["GET", "POST"])
+@app.route(
+    "/edit_product/<product_id>",
+    methods=["GET", "POST"]
+)
 def edit_product(product_id):
+
+    get_database()
 
     try:
 
@@ -196,10 +263,15 @@ def edit_product(product_id):
         ).strip()
 
         update_data = {
+
             "name": name,
+
             "category": category,
+
             "capacity": capacity,
+
             "price": price,
+
             "warranty": warranty
         }
 
@@ -223,9 +295,11 @@ def edit_product(product_id):
             )
 
         products_collection.update_one(
+
             {
                 "_id": ObjectId(product_id)
             },
+
             {
                 "$set": update_data
             }
@@ -236,17 +310,27 @@ def edit_product(product_id):
         )
 
     products = list(
-        products_collection.find().sort("_id", -1)
+        products_collection.find().sort(
+            "_id",
+            -1
+        )
     )
 
     orders = list(
-        orders_collection.find().sort("_id", -1)
+        orders_collection.find().sort(
+            "_id",
+            -1
+        )
     )
 
     return render_template(
+
         "admin.html",
+
         products=products,
+
         orders=orders,
+
         edit_product=product
     )
 
@@ -255,8 +339,13 @@ def edit_product(product_id):
 # PLACE ORDER
 # =========================================================
 
-@app.route("/order", methods=["POST"])
+@app.route(
+    "/order",
+    methods=["POST"]
+)
 def order():
+
+    get_database()
 
     customer_name = request.form.get(
         "customer_name",
@@ -319,15 +408,21 @@ def order():
 )
 def update_order(order_id):
 
+    get_database()
+
     status = request.form.get(
         "status",
         "Pending"
     )
 
     allowed_status = [
+
         "Pending",
+
         "Confirmed",
+
         "Delivered",
+
         "Cancelled"
     ]
 
@@ -338,9 +433,11 @@ def update_order(order_id):
     try:
 
         orders_collection.update_one(
+
             {
                 "_id": ObjectId(order_id)
             },
+
             {
                 "$set": {
                     "status": status
@@ -364,12 +461,17 @@ def update_order(order_id):
 # DELETE ORDER
 # =========================================================
 
-@app.route("/delete_order/<order_id>")
+@app.route(
+    "/delete_order/<order_id>"
+)
 def delete_order(order_id):
+
+    get_database()
 
     try:
 
         orders_collection.delete_one(
+
             {
                 "_id": ObjectId(order_id)
             }
@@ -396,18 +498,25 @@ def health():
 
     try:
 
+        get_database()
+
         client.admin.command("ping")
 
         return jsonify({
+
             "status": "OK",
+
             "database": "Connected"
         })
 
     except Exception as e:
 
         return jsonify({
+
             "status": "ERROR",
+
             "database": str(e)
+
         }), 500
 
 
@@ -419,6 +528,8 @@ def health():
 def db_test():
 
     try:
+
+        get_database()
 
         client.admin.command("ping")
 
@@ -441,7 +552,6 @@ def db_test():
             "products": product_count,
 
             "orders": order_count
-
         })
 
     except Exception as e:
@@ -462,7 +572,10 @@ def db_test():
 if __name__ == "__main__":
 
     app.run(
+
         host="0.0.0.0",
+
         port=5000,
+
         debug=True
     )
