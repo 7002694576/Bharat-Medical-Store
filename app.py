@@ -378,7 +378,7 @@ def delete_order(order_id):
     except Exception as e:
 
         print(
-            "Delete Order Error:",
+            "Order Delete Error:",
             e
         )
 
